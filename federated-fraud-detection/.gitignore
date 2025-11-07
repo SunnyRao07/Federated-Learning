@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# TensorFlow
+*.h5
+*.pb
+checkpoint
+*.ckpt
+*.ckpt.*
+
+# Results and logs
+backend/results/
+*.log
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build
+frontend/dist/
+frontend/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Data
+*.csv
+*.json
+backend/data/*.csv
+!backend/data/load_data.py
+!backend/data/synthetic_generator.py
