@@ -2,9 +2,16 @@
 Differential Privacy implementation for federated learning
 """
 import tensorflow as tf
-from tensorflow_privacy.privacy.optimizers import dp_optimizer_keras
-from tensorflow_privacy.privacy.analysis import compute_dp_sgd_privacy
 import numpy as np
+
+# Try to import tensorflow_privacy, fallback to manual implementation if not available
+try:
+    from tensorflow_privacy.privacy.optimizers import dp_optimizer_keras
+    from tensorflow_privacy.privacy.analysis import compute_dp_sgd_privacy
+    TFP_AVAILABLE = True
+except ImportError:
+    print("WARNING: tensorflow-privacy not available. Using manual DP implementation.")
+    TFP_AVAILABLE = False
 
 class DifferentialPrivacyManager:
     """
@@ -22,12 +29,16 @@ class DifferentialPrivacyManager:
         
     def create_dp_optimizer(self):
         """Create a differentially private optimizer"""
-        optimizer = dp_optimizer_keras.DPKerasAdamOptimizer(
-            l2_norm_clip=self.l2_norm_clip,
-            noise_multiplier=self.noise_multiplier,
-            num_microbatches=self.num_microbatches,
-            learning_rate=self.learning_rate
-        )
+        if TFP_AVAILABLE:
+            optimizer = dp_optimizer_keras.DPKerasAdamOptimizer(
+                l2_norm_clip=self.l2_norm_clip,
+                noise_multiplier=self.noise_multiplier,
+                num_microbatches=self.num_microbatches,
+                learning_rate=self.learning_rate
+            )
+        else:
+            # Fallback to regular Adam optimizer (noise will be added manually)
+            optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         return optimizer
     
     def compute_privacy_budget(self, n_samples, batch_size, epochs):
@@ -46,16 +57,20 @@ class DifferentialPrivacyManager:
         steps = epochs * (n_samples // batch_size)
         delta = 1.0 / n_samples
         
-        try:
-            epsilon = compute_dp_sgd_privacy.compute_dp_sgd_privacy(
-                n=n_samples,
-                batch_size=batch_size,
-                noise_multiplier=self.noise_multiplier,
-                epochs=epochs,
-                delta=delta
-            )[0]
-        except Exception as e:
-            # Fallback calculation if TF Privacy computation fails
+        if TFP_AVAILABLE:
+            try:
+                epsilon = compute_dp_sgd_privacy.compute_dp_sgd_privacy(
+                    n=n_samples,
+                    batch_size=batch_size,
+                    noise_multiplier=self.noise_multiplier,
+                    epochs=epochs,
+                    delta=delta
+                )[0]
+            except Exception as e:
+                # Fallback calculation if TF Privacy computation fails
+                epsilon = self._approximate_epsilon(steps, n_samples, batch_size, delta)
+        else:
+            # Use approximation when tensorflow_privacy is not available
             epsilon = self._approximate_epsilon(steps, n_samples, batch_size, delta)
         
         self.epsilon = epsilon
