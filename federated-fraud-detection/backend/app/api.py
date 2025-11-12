@@ -8,7 +8,7 @@ import numpy as np
 import sys
 import os
 
-# Add parent directory to path
+# Add parent directory to path 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from app.trainer import FederatedTrainer
