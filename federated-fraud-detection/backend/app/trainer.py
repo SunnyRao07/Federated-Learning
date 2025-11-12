@@ -232,8 +232,13 @@ class FederatedTrainer:
         
         return results
     
-    def save_results(self, filepath='backend/results/performance.json'):
+    def save_results(self, filepath='results/performance.json'):
         """Save training results to file"""
+        # Get absolute path to avoid duplication
+        if not os.path.isabs(filepath):
+            base_dir = os.path.dirname(os.path.dirname(__file__))  # Go up from app/ to backend/
+            filepath = os.path.join(base_dir, filepath)
+        
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         
         # Get final metrics
@@ -270,6 +275,14 @@ class FederatedTrainer:
             json.dump(results, f, indent=2)
         
         print(f"\nResults saved to {filepath}")
+        
+        # Also save the trained model
+        base_dir = os.path.dirname(os.path.dirname(__file__))  # backend/
+        model_dir = os.path.join(base_dir, 'models', 'saved')
+        os.makedirs(model_dir, exist_ok=True)
+        model_path = os.path.join(model_dir, 'fraud_detection_model.h5')
+        self.global_model.save(model_path)
+        print(f"Trained model saved to {model_path}")
         
         return results
     
