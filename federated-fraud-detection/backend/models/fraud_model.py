@@ -17,7 +17,8 @@ class FraudDetectionModel:
     def build_model(self):
         """Build the fraud detection neural network"""
         model = keras.Sequential([
-            layers.Dense(64, activation='relu', input_shape=(self.input_dim,), name='dense_1'),
+            layers.Input(shape=(self.input_dim,)),
+            layers.Dense(64, activation='relu', name='dense_1'),
             layers.Dropout(0.3, name='dropout_1'),
             layers.Dense(32, activation='relu', name='dense_2'),
             layers.Dropout(0.2, name='dropout_2'),
