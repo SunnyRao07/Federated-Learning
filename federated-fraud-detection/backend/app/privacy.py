@@ -30,12 +30,15 @@ class DifferentialPrivacyManager:
     def create_dp_optimizer(self):
         """Create a differentially private optimizer"""
         if TFP_AVAILABLE:
-            optimizer = dp_optimizer_keras.DPKerasAdamOptimizer(
-                l2_norm_clip=self.l2_norm_clip,
-                noise_multiplier=self.noise_multiplier,
-                num_microbatches=self.num_microbatches,
-                learning_rate=self.learning_rate
-            )
+            try:
+                optimizer = dp_optimizer_keras.DPKerasAdamOptimizer(
+                    l2_norm_clip=self.l2_norm_clip,
+                    noise_multiplier=self.noise_multiplier,
+                    num_microbatches=self.num_microbatches,
+                    learning_rate=self.learning_rate
+                )
+            except:
+                optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         else:
             # Fallback to regular Adam optimizer (noise will be added manually)
             optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
@@ -66,7 +69,7 @@ class DifferentialPrivacyManager:
                     epochs=epochs,
                     delta=delta
                 )[0]
-            except Exception as e:
+            except Exception:
                 # Fallback calculation if TF Privacy computation fails
                 epsilon = self._approximate_epsilon(steps, n_samples, batch_size, delta)
         else:
