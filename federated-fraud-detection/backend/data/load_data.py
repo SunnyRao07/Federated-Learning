@@ -69,7 +69,7 @@ class FederatedDataLoader:
                 print("WARNING: Generating synthetic data as fallback...")
                 print("To use real Kaggle data, run: python -m data.download_kaggle_dataset")
                 from .synthetic_generator import generate_synthetic_data
-                data = generate_synthetic_data(n_samples=100000, fraud_ratio=0.02)
+            data = generate_synthetic_data(n_samples=100000, fraud_ratio=0.02)
         
         # Validate data format
         required_columns = ['Time', 'Amount', 'Class']
