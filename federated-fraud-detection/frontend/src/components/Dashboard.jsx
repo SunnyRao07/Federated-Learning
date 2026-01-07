@@ -1,6 +1,3 @@
-/**
- * Main Dashboard Component
- */
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -113,9 +110,9 @@ const Dashboard = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <MetricCard
-                title="F1 Score"
-                value={metrics.federated_model.f1_score?.toFixed(4) || 'N/A'}
-                improvement={metrics.improvement.f1_score}
+                title="Recall"
+                value={metrics.federated_model.recall?.toFixed(4) || 'N/A'}
+                improvement={metrics.improvement.recall}
                 icon={<CheckCircle />}
                 color="#2196f3"
               />
@@ -142,22 +139,8 @@ const Dashboard = () => {
 
           {/* Detailed Metrics */}
           <Grid container spacing={3}>
-            {/* Federated vs Local Comparison */}
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Model Performance Comparison
-                </Typography>
-                <ComparisonTable
-                  federated={metrics.federated_model}
-                  local={metrics.local_baseline}
-                  improvement={metrics.improvement}
-                />
-              </Paper>
-            </Grid>
-
             {/* Privacy Metrics */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>
                   Privacy Protection
@@ -187,11 +170,11 @@ const MetricCard = ({ title, value, improvement, subtitle, icon, color }) => (
           <Typography variant="h4" fontWeight="bold" color={color}>
             {value}
           </Typography>
-          {improvement !== undefined && (
+          {improvement !== undefined && improvement > 0 && (
             <Chip
               label={`${improvement > 0 ? '+' : ''}${improvement.toFixed(1)}%`}
               size="small"
-              color={improvement > 0 ? 'success' : 'default'}
+              color="success"
               sx={{ mt: 1 }}
             />
           )}
@@ -207,87 +190,58 @@ const MetricCard = ({ title, value, improvement, subtitle, icon, color }) => (
   </Card>
 );
 
-// Comparison Table Component
-const ComparisonTable = ({ federated, local, improvement }) => (
-  <Box>
-    {[
-      { label: 'Accuracy', key: 'accuracy' },
-      { label: 'AUC', key: 'auc' },
-      { label: 'Precision', key: 'precision' },
-      { label: 'Recall', key: 'recall' },
-      { label: 'F1 Score', key: 'f1_score' },
-    ].map((metric) => (
-      <Box
-        key={metric.key}
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        py={1.5}
-        borderBottom="1px solid #eee"
-      >
-        <Typography variant="body2" fontWeight="medium">
-          {metric.label}
-        </Typography>
-        <Box display="flex" gap={2} alignItems="center">
-          <Typography variant="body2" color="text.secondary">
-            Local: {local[metric.key]?.toFixed(4) || 'N/A'}
-          </Typography>
-          <Typography variant="body2" fontWeight="bold" color="primary">
-            Federated: {federated[metric.key]?.toFixed(4) || 'N/A'}
-          </Typography>
-          <Chip
-            label={`${improvement[metric.key] > 0 ? '+' : ''}${improvement[metric.key]?.toFixed(1) || 0}%`}
-            size="small"
-            color={improvement[metric.key] > 0 ? 'success' : 'default'}
-          />
-        </Box>
-      </Box>
-    ))}
-  </Box>
-);
+
 
 // Privacy Metrics Component
 const PrivacyMetrics = ({ privacy, attacks }) => (
-  <Box>
-    <Box mb={3}>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
+  <Grid container spacing={4} alignItems="center">
+    <Grid item xs={12} md={6}>
+      <Typography variant="subtitle1" gutterBottom fontWeight="medium" color="text.secondary">
         Differential Privacy Parameters
       </Typography>
-      <Box display="flex" gap={2} mt={1}>
-        <Chip label={`ε = ${privacy.epsilon?.toFixed(2) || 'N/A'}`} color="primary" />
-        <Chip label={`δ = ${privacy.delta?.toExponential(2) || 'N/A'}`} />
-        <Chip label={`Noise: ${privacy.noise_multiplier?.toFixed(2) || 'N/A'}`} />
+      <Box display="flex" gap={2} mt={2} flexWrap="wrap">
+        <Chip 
+          label={`ε = ${privacy.epsilon?.toFixed(2) || 'N/A'}`} 
+          color="primary" 
+          variant="filled"
+          sx={{ fontWeight: 'bold', fontSize: '1.1rem', px: 1 }}
+        />
+        <Chip label={`δ = ${privacy.delta?.toExponential(2) || 'N/A'}`} variant="outlined" />
+        <Chip label={`Noise: ${privacy.noise_multiplier?.toFixed(2) || 'N/A'}`} variant="outlined" />
+        <Chip label={`Clip: ${privacy.l2_norm_clip?.toFixed(1) || 'N/A'}`} variant="outlined" />
       </Box>
-    </Box>
+    </Grid>
 
     {attacks && (
-      <Box>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+      <Grid item xs={12} md={6}>
+        <Typography variant="subtitle1" gutterBottom fontWeight="medium" color="text.secondary">
           Privacy Attack Defense
         </Typography>
-        <Box mt={2}>
-          <Box display="flex" justifyContent="space-between" mb={1}>
-            <Typography variant="body2">Overall Defense Rate</Typography>
-            <Typography variant="body2" fontWeight="bold" color="success.main">
+        <Box mt={1}>
+          <Box display="flex" justifyContent="space-between" mb={1} p={1.5} bgcolor="#f8f9fa" borderRadius={2}>
+            <Typography variant="body1">Overall Defense Rate</Typography>
+            <Typography variant="body1" fontWeight="bold" color="success.main">
               {(attacks.overall_defense_rate * 100).toFixed(1)}%
             </Typography>
           </Box>
-          <Box display="flex" justifyContent="space-between" mb={1}>
-            <Typography variant="body2">Membership Inference Defense</Typography>
-            <Typography variant="body2" fontWeight="bold">
-              {(attacks.membership_inference?.defense_success_rate * 100).toFixed(1)}%
-            </Typography>
-          </Box>
-          <Box display="flex" justifyContent="space-between">
-            <Typography variant="body2">Model Inversion Defense</Typography>
-            <Typography variant="body2" fontWeight="bold">
-              {(attacks.model_inversion?.defense_score * 100).toFixed(1)}%
-            </Typography>
+          <Box px={1.5}>
+            <Box display="flex" justifyContent="space-between" mb={1} py={0.5} borderBottom="1px dashed #eee">
+              <Typography variant="body2" color="text.secondary">Membership Inference</Typography>
+              <Typography variant="body2" fontWeight="medium">
+                {(attacks.membership_inference?.defense_success_rate * 100).toFixed(1)}%
+              </Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" py={0.5}>
+              <Typography variant="body2" color="text.secondary">Model Inversion</Typography>
+              <Typography variant="body2" fontWeight="medium">
+                {(attacks.model_inversion?.defense_score * 100).toFixed(1)}%
+              </Typography>
+            </Box>
           </Box>
         </Box>
-      </Box>
+      </Grid>
     )}
-  </Box>
+  </Grid>
 );
 
 export default Dashboard;

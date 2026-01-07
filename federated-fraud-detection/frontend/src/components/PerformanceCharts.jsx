@@ -97,14 +97,14 @@ const PerformanceCharts = () => {
                 </Paper>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+             {/* <Grid item xs={12} md={6}>
                 <Paper sx={{ p: 3 }}>
                   <Typography variant="h6" gutterBottom>
                     Performance Improvement
                   </Typography>
                   <ImprovementChart improvement={metrics.improvement} />
                 </Paper>
-              </Grid>
+              </Grid>*/}
             </Grid>
           )}
         </>
